@@ -29,6 +29,7 @@ import com.nova.assistant.ui.theme.NovaGlowError
 import com.nova.assistant.ui.theme.NovaGlowPaused
 import com.nova.assistant.ui.theme.NovaMagenta
 import com.nova.assistant.ui.theme.NovaPurpleDeep
+import com.nova.assistant.ui.theme.NovaSurfaceDark
 import com.nova.assistant.ui.theme.NovaViolet
 import kotlin.math.PI
 import kotlin.math.cos
