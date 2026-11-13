@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat
 import com.nova.assistant.R
 import com.nova.assistant.data.models.AssistantState
 import com.nova.assistant.data.repository.ConversationRepository
+import com.nova.assistant.device.ScreenWakeHelper
 import com.nova.assistant.domain.executor.CommandExecutor
 import com.nova.assistant.domain.parser.CommandParser
 import com.nova.assistant.speech.audio.AudioCaptureManager
@@ -22,6 +23,7 @@ import com.nova.assistant.speech.recognition.OfflineSpeechEngine
 import com.nova.assistant.speech.tts.SpeechOutput
 import com.nova.assistant.speech.wakeword.WakeWordEngine
 import com.nova.assistant.ui.MainActivity
+import com.nova.assistant.ui.overlay.NovaFloatingAssistantActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +52,7 @@ class NovaListeningService : Service() {
     @Inject lateinit var commandParser: CommandParser
     @Inject lateinit var commandExecutor: CommandExecutor
     @Inject lateinit var conversationRepository: ConversationRepository
+    @Inject lateinit var screenWakeHelper: ScreenWakeHelper
 
     private val serviceScope = CoroutineScope(Dispatchers.Main)
     private var wakeWordJob: Job? = null
@@ -98,6 +101,7 @@ class NovaListeningService : Service() {
         }
 
         _serviceAssistantState.value = AssistantState.WAKE_WORD_LISTENING
+        offlineSpeechEngine.resetToWakeWordMode()
 
         // Start capturing audio
         audioCaptureManager.startCapture { buffer, readSize ->
@@ -127,7 +131,15 @@ class NovaListeningService : Service() {
     private fun onWakeWordTriggered() {
         serviceScope.launch {
             _serviceAssistantState.value = AssistantState.WAKE_WORD_DETECTED
-            delay(400)
+            screenWakeHelper.wakeUpScreen()
+
+            // Pop up the Siri-style Floating Overlay over whatever is currently active or on the lock screen
+            val overlayIntent = Intent(this@NovaListeningService, NovaFloatingAssistantActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(overlayIntent)
+
+            delay(300)
             _serviceAssistantState.value = AssistantState.COMMAND_LISTENING
         }
     }
@@ -152,6 +164,8 @@ class NovaListeningService : Service() {
             // Speak response
             _serviceAssistantState.value = AssistantState.SPEAKING
             speechOutput.speak(response) {
+                // Return back to lightweight keyword spotting mode
+                offlineSpeechEngine.resetToWakeWordMode()
                 _serviceAssistantState.value = AssistantState.WAKE_WORD_LISTENING
             }
         }

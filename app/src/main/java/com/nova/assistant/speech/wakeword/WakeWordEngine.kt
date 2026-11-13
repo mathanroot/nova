@@ -1,5 +1,7 @@
 package com.nova.assistant.speech.wakeword
 
+import com.nova.assistant.device.ScreenWakeHelper
+import com.nova.assistant.speech.audio.ChimePlayer
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -8,33 +10,48 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WakeWordEngine @Inject constructor() {
-
+class WakeWordEngine @Inject constructor(
+    private val chimePlayer: ChimePlayer? = null,
+    private val screenWakeHelper: ScreenWakeHelper? = null
+) {
     private val _wakeWordDetected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val wakeWordDetected: SharedFlow<Unit> = _wakeWordDetected.asSharedFlow()
 
     private var sensitivity: Float = 0.6f
 
+    private val targetPhrases = listOf(
+        "hey nova",
+        "nova",
+        "hi nova",
+        "ok nova",
+        "hello nova",
+        "hey noah",
+        "hey know",
+        "a nova",
+        "hay nova"
+    )
+
     fun setSensitivity(value: Float) {
         sensitivity = value.coerceIn(0.1f, 1.0f)
     }
 
-    /**
-     * Inspects partial recognizer text or phoneme sequences for the wake phrase "hey nova" or "nova".
-     */
     fun processRecognizedText(text: String): Boolean {
-        val clean = text.lowercase(Locale.ROOT)
-        if (clean.contains("hey nova") || clean.contains("hi nova") || clean.contains("ok nova") || clean.contains("nova")) {
-            _wakeWordDetected.tryEmit(Unit)
+        val clean = text.lowercase(Locale.ROOT).trim()
+        val isMatch = targetPhrases.any { phrase ->
+            clean.contains(phrase)
+        }
+
+        if (isMatch) {
+            triggerWakeWord()
             return true
         }
         return false
     }
 
-    /**
-     * Manual trigger (e.g. from UI mic tap or test).
-     */
     fun triggerWakeWord() {
+        // Immediate Siri-style audio earcon & wake screen
+        chimePlayer?.playWakeChime()
+        screenWakeHelper?.wakeUpScreen()
         _wakeWordDetected.tryEmit(Unit)
     }
 }

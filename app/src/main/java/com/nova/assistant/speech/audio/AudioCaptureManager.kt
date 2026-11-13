@@ -8,6 +8,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import androidx.core.content.ContextCompat
+import com.nova.assistant.device.ScreenWakeHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +24,8 @@ import javax.inject.Singleton
 @Singleton
 class AudioCaptureManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val visualizerProcessor: AudioVisualizerProcessor
+    private val visualizerProcessor: AudioVisualizerProcessor,
+    private val screenWakeHelper: ScreenWakeHelper
 ) {
     companion object {
         const val SAMPLE_RATE = 16000
@@ -70,6 +72,9 @@ class AudioCaptureManager @Inject constructor(
                 return Result.failure(IllegalStateException("AudioRecord failed to initialize"))
             }
 
+            // Acquire CPU wake lock so recording continues seamlessly when screen turns off
+            screenWakeHelper.acquireCpuWakeLock()
+
             audioRecord?.startRecording()
             _isRecording.value = true
 
@@ -103,6 +108,7 @@ class AudioCaptureManager @Inject constructor(
             audioRecord?.release()
         } catch (_: Exception) {}
         audioRecord = null
+        screenWakeHelper.releaseCpuWakeLock()
         visualizerProcessor.reset()
     }
 }
