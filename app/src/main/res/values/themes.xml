@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.NovaAssistant" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/nova_background</item>
+        <item name="android:navigationBarColor">@color/nova_background</item>
+        <item name="android:windowBackground">@color/nova_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">NOVA</string>
+    <string name="subtitle">Native Offline Voice Assistant</string>
+
+    <!-- Assistant Status Strings -->
+    <string name="status_idle">Ready for command</string>
+    <string name="status_wake_word_listening">Listening for "Hey Nova"…</string>
+    <string name="status_wake_word_detected">"Hey Nova" detected!</string>
+    <string name="status_command_listening">Listening to your command…</string>
+    <string name="status_processing">Interpreting command…</string>
+    <string name="status_executing">Executing…</string>
+    <string name="status_speaking">Speaking response…</string>
+    <string name="status_error">Could not process command</string>
+    <string name="status_paused">Listening paused</string>
+
+    <!-- Foreground Notification -->
+    <string name="notification_channel_name">NOVA Voice Service</string>
+    <string name="notification_channel_desc">Active background listening for Hey Nova wake word</string>
+    <string name="notification_title">NOVA is listening</string>
+    <string name="notification_content">Say "Hey Nova" or tap to open</string>
+    <string name="notification_stop">Stop Listening</string>
+
+    <!-- Prompt suggestions -->
+    <string name="hint_flashlight">"Turn on flashlight"</string>
+    <string name="hint_battery">"How much battery is left?"</string>
+    <string name="hint_location">"Where am I?"</string>
+    <string name="hint_whatsapp">"Open WhatsApp"</string>
+    <string name="hint_multi">"Turn on flashlight and increase volume"</string>
+</resources>
