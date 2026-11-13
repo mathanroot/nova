@@ -10,10 +10,20 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WakeWordEngine @Inject constructor(
-    private val chimePlayer: ChimePlayer? = null,
-    private val screenWakeHelper: ScreenWakeHelper? = null
+class WakeWordEngine private constructor(
+    private val chimePlayer: ChimePlayer?,
+    private val screenWakeHelper: ScreenWakeHelper?
 ) {
+    // Exactly ONE constructor annotated with @Inject for Dagger/Hilt
+    @Inject
+    constructor(
+        chimePlayer: ChimePlayer,
+        screenWakeHelper: ScreenWakeHelper
+    ) : this(chimePlayer as ChimePlayer?, screenWakeHelper as ScreenWakeHelper?)
+
+    // Secondary constructor for unit testing without @Inject
+    constructor() : this(null, null)
+
     private val _wakeWordDetected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val wakeWordDetected: SharedFlow<Unit> = _wakeWordDetected.asSharedFlow()
 
