@@ -1,4 +1,4 @@
-gitname: Build NOVA Android Voice Assistant
+name: Build NOVA Android Voice Assistant
 
 on:
   push:
