@@ -26,31 +26,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
 
-      - name: Ensure Gradle Wrapper Jar
-        run: |
-          if [ ! -s gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "Generating Gradle wrapper jar..."
-            gradle wrapper --gradle-version 8.7 || true
-          fi
-          if [ ! -s gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "Extracting wrapper from official Gradle distribution..."
-            curl -sSL "https://services.gradle.org/distributions/gradle-8.7-bin.zip" -o /tmp/gradle-8.7-bin.zip
-            unzip -q -o -j /tmp/gradle-8.7-bin.zip "*/gradle-wrapper.jar" -d gradle/wrapper/
-            rm -f /tmp/gradle-8.7-bin.zip
-          fi
-          ls -la gradle/wrapper/
-
-      - name: Grant Execute Permission to Gradle Wrapper
-        run: chmod +x gradlew
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.7
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: gradle testDebugUnitTest --stacktrace
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
