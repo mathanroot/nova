@@ -2,24 +2,34 @@ package com.nova.assistant.device
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
 import android.os.PowerManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ScreenWakeHelper @Inject constructor(
-    @ApplicationContext private val context: Context
+class ScreenWakeHelper(
+    private val context: Context?
 ) {
-    private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    @Inject
+    constructor(@ApplicationContext context: Context) : this(context as Context?)
+
+    companion object {
+        fun createForTesting(): ScreenWakeHelper = ScreenWakeHelper(null)
+    }
+
+    private val powerManager: PowerManager? by lazy {
+        context?.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    }
+
     private var partialWakeLock: PowerManager.WakeLock? = null
 
     @SuppressLint("WakelockTimeout")
     fun acquireCpuWakeLock() {
+        val pm = powerManager ?: return
         if (partialWakeLock?.isHeld == true) return
         try {
-            partialWakeLock = powerManager.newWakeLock(
+            partialWakeLock = pm.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,
                 "Nova:ContinuousListeningCpuLock"
             ).apply {
@@ -40,8 +50,9 @@ class ScreenWakeHelper @Inject constructor(
 
     @Suppress("DEPRECATION")
     fun wakeUpScreen() {
+        val pm = powerManager ?: return
         try {
-            val screenLock = powerManager.newWakeLock(
+            val screenLock = pm.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
                 "Nova:ScreenTurnOnWakeLock"
             )
