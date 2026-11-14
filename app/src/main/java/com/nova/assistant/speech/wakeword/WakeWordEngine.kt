@@ -1,6 +1,5 @@
 package com.nova.assistant.speech.wakeword
 
-import com.nova.assistant.device.ScreenWakeHelper
 import com.nova.assistant.speech.audio.ChimePlayer
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -11,11 +10,10 @@ import javax.inject.Singleton
 
 @Singleton
 class WakeWordEngine @Inject constructor(
-    private val chimePlayer: ChimePlayer,
-    private val screenWakeHelper: ScreenWakeHelper
+    private val chimePlayer: ChimePlayer
 ) {
     // Secondary parameterless constructor for unit testing (NO @Inject)
-    constructor() : this(ChimePlayer(), ScreenWakeHelper.createForTesting())
+    constructor() : this(ChimePlayer())
 
     private val _wakeWordDetected = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val wakeWordDetected: SharedFlow<Unit> = _wakeWordDetected.asSharedFlow()
@@ -52,9 +50,8 @@ class WakeWordEngine @Inject constructor(
     }
 
     fun triggerWakeWord() {
-        // Immediate Siri-style audio earcon & wake screen
+        // Immediate Siri-style audio earcon chime
         chimePlayer.playWakeChime()
-        screenWakeHelper.wakeUpScreen()
         _wakeWordDetected.tryEmit(Unit)
     }
 }

@@ -8,28 +8,20 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ScreenWakeHelper(
-    private val context: Context?
+class ScreenWakeHelper @Inject constructor(
+    @ApplicationContext private val context: Context
 ) {
-    @Inject
-    constructor(@ApplicationContext context: Context) : this(context as Context?)
-
-    companion object {
-        fun createForTesting(): ScreenWakeHelper = ScreenWakeHelper(null)
-    }
-
-    private val powerManager: PowerManager? by lazy {
-        context?.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    private val powerManager by lazy {
+        context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 
     private var partialWakeLock: PowerManager.WakeLock? = null
 
     @SuppressLint("WakelockTimeout")
     fun acquireCpuWakeLock() {
-        val pm = powerManager ?: return
         if (partialWakeLock?.isHeld == true) return
         try {
-            partialWakeLock = pm.newWakeLock(
+            partialWakeLock = powerManager.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,
                 "Nova:ContinuousListeningCpuLock"
             ).apply {
@@ -50,9 +42,8 @@ class ScreenWakeHelper(
 
     @Suppress("DEPRECATION")
     fun wakeUpScreen() {
-        val pm = powerManager ?: return
         try {
-            val screenLock = pm.newWakeLock(
+            val screenLock = powerManager.newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
                 "Nova:ScreenTurnOnWakeLock"
             )
